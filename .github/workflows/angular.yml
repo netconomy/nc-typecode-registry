@@ -1,0 +1,82 @@
+name: Angular Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+      - name: Run Linter
+        run: npx eslint . --ext .ts,.html
+        working-directory: frontend
+
+  test:
+    name: Test and Upload Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: Run Tests with Coverage
+        run: npm run test -- --watch=false --no-progress --browsers=ChromeHeadless --code-coverage
+        working-directory: frontend
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV }}
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: true
+          verbose: true
+
+  build:
+    name: Build Angular Frontend
+    runs-on: ubuntu-latest
+    env:
+      LOWERCASE_OWNER: ${{ github.repository_owner }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set lower case repo owner
+        run: echo "LOWERCASE_OWNER=${LOWERCASE_OWNER,,}" >> $GITHUB_ENV
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+      - name: Check Formatting with Prettier
+        run: npx prettier --check .
+        working-directory: frontend
+      - name: Build
+        run: npm run build -- --configuration production
+        working-directory: frontend
+      - name: Upload Angular build Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: angular-build
+          path: frontend/dist
+      - name: Build Docker Image
+        run: docker build -t ghcr.io/${{ env.LOWERCASE_OWNER }}/typecode-registry:latest -f frontend/Dockerfile frontend
+      - name: Push Docker Image to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ env.LOWERCASE_OWNER }} --password-stdin
+          docker push ghcr.io/${{ env.LOWERCASE_OWNER }}/typecode-registry:latest

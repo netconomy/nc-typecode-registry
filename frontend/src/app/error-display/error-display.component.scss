@@ -1,0 +1,178 @@
+h1 {
+  font-size: 3.25rem;
+  color: #cc0000;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+p {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: lighten(#fff, 20%);
+}
+
+i {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: lighten(#fff, 20%);
+}
+
+@mixin float-animation {
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-3deg);
+    }
+
+    50% {
+      transform: translateY(20px) rotate(3deg);
+    }
+  }
+
+  animation: float 6s ease-in-out infinite;
+}
+
+@mixin bubble($size, $start-left, $animation-duration) {
+  width: $size;
+  height: $size;
+  left: $start-left;
+  animation: rise $animation-duration infinite;
+}
+
+@keyframes rise {
+  0% {
+    bottom: -10%;
+    opacity: 0.5;
+  }
+
+  100% {
+    bottom: 110%;
+    opacity: 0;
+  }
+}
+
+.page {
+  position: absolute;
+  top: 7vh; // header height
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(45deg, #709fb0, #bcbfee) !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 1rem 12rem;
+  overflow: hidden;
+
+  .error-message {
+    z-index: 10;
+    text-align: center;
+  }
+
+  img {
+    @include float-animation;
+    width: 200px;
+    transform: translate(-50%, -50%);
+    margin: 2.5rem 0;
+  }
+
+  .bubble {
+    position: absolute;
+    bottom: -10%;
+    border-radius: 50%;
+    background-color: #fff;
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        @include bubble(10px * $i, 10% * $i, 5s + $i);
+      }
+    }
+  }
+
+  ol {
+    list-style-type: decimal;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: #6d91af;
+    line-height: 1.2;
+    padding: 1rem;
+
+    li {
+      text-align: start;
+      font-size: 1.25rem;
+      color: lighten(#fff, 20%);
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 1650px) {
+  .page {
+    padding: 1rem 6rem;
+  }
+}
+
+@media (max-height: 920px) {
+  img {
+    width: 150px !important;
+    margin: 0.75rem 0 !important;
+  }
+
+  h1 {
+    font-size: 2.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  i {
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  ol {
+    line-height: 1 !important;
+
+    li {
+      font-size: 1rem !important;
+    }
+  }
+}
+
+@media (max-height: 750px) {
+  img {
+    width: 100px !important;
+    margin: 0.5rem 0 !important;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
